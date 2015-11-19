@@ -30,7 +30,7 @@ module.exports =
       return __.find(commands, {
         atomName: name
       })
-    
+
     # returns the active file path
     @activeFile: ->
       editor = atom.workspace.getActivePaneItem()
@@ -91,11 +91,19 @@ module.exports =
         return fs.existsSync(settingsPath)
       catch
         return false
-        
+
     @isMetadata: (filePath) ->
       console.log 'checking whether file is valid sfdc metadata: '+filePath
       apex_file_extensions = atom.config.get('MavensMate-Atom').mm_apex_file_extensions
-      return (path.extname(filePath) in apex_file_extensions || path.basename(path.dirname(path.dirname(filePath))) == 'aura') and path.basename(path.dirname(filePath)) != 'config'
+      return (path.extname(filePath) in apex_file_extensions || @isMetaXml(filePath) || path.basename(path.dirname(path.dirname(filePath))) == 'aura') and path.basename(path.dirname(filePath)) != 'config'
+
+    # Check to see if a file is of the file.ext-meta.xml format that sfdc uses
+    #   to store apex/visualforce metadata. Changes to these files should trigger
+    #   compilation to push updated file metadata to the server.
+    @isMetaXml: (filePath) ->
+      console.log 'checking whether file is sfdc meta xml'+filePath
+      return filePath.endsWith('-meta.xml')
+
 
     # compile-related commands
     @compileCommands: ->
@@ -151,7 +159,7 @@ module.exports =
     # returns tree view
     @treeView: ->
       atom.packages.getActivePackage('tree-view').mainModule.treeView
-      
+
     @withoutExtension: (filePath) ->
       filePath.split(/[.]/).shift()
 
